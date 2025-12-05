@@ -15,8 +15,10 @@ contract FoundMe {
     address[] public  founders;
     mapping (address => uint256 amountFounded) public addressToAmountFounded;
 
-    function callMeRightAway() public {
-        
+    address public owner;
+
+    constructor() {
+        owner = msg.sender;
     }
 
     function funds( ) public payable {
@@ -24,7 +26,6 @@ contract FoundMe {
         require(msg.value.getConversionRate() >= minumumUsd, "didn't send enough ETH"); //1e18
         founders.push(msg.sender);
         addressToAmountFounded[msg.sender] += msg.value;
-
     }
 
     function withdraw() public {
@@ -48,7 +49,11 @@ contract FoundMe {
         // require(sendSuccess, "Send Failed");
         //call
         (bool callSuccess, ) = payable (msg.sender).call{value: address(this).balance}("");
-        require(callSuccess, "call failed");
-        
-    } 
+        require(callSuccess, "call failed");  
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Sender not owener!");
+        _;
+    }
 }
