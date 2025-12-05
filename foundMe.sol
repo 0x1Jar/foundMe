@@ -10,7 +10,8 @@ contract FoundMe {
 
     using PriceConverter for uint256;
 
-    uint256 public minumumUsd = 5e18;
+    //use constant to save gas
+    uint256 public constant MINIMUM_USD = 50 * 1e18; //1 * 10 ** 18
 
     address[] public  founders;
     mapping (address => uint256 amountFounded) public addressToAmountFounded;
@@ -23,15 +24,13 @@ contract FoundMe {
 
     function funds( ) public payable {
         // msg.value.getConversionRate();
-        require(msg.value.getConversionRate() >= minumumUsd, "didn't send enough ETH"); //1e18
+        require(msg.value.getConversionRate() >= MINIMUM_USD, "didn't send enough ETH");
         founders.push(msg.sender);
         addressToAmountFounded[msg.sender] += msg.value;
     }
 
     function withdraw() public {
         //for loop
-        //[1, 2, 3,] elements 
-        //0, 1, 2, 3 indexes
         // for (/* start index, ending index,  step amount*/)
         for (uint256 founderIndex = 0 ; founderIndex < founders.length; founderIndex++){
             address funder = founders[founderIndex];
@@ -41,12 +40,6 @@ contract FoundMe {
         founders = new address[](0);
         // actually withdraw the funds
 
-        //not recomeded using trasnfer and send!
-        //transfer
-        // payable(msg.sender).transfer(address(this).balance);
-        // //send
-        // bool sendSuccess = payable (msg.sender).send(address(this).balance);
-        // require(sendSuccess, "Send Failed");
         //call
         (bool callSuccess, ) = payable (msg.sender).call{value: address(this).balance}("");
         require(callSuccess, "call failed");  
